@@ -1,0 +1,299 @@
+name: linux-sre-env
+version: "1.0.0"
+description: "Linux System Reliability Engineer Training Environment"
+
+# Environment metadata
+metadata:
+  author: "SRE Team"
+  domain: "system_administration"
+  tags:
+    - "sre"
+    - "linux"
+    - "troubleshooting"
+    - "process-management"
+    - "agentic"
+
+# API Configuration
+api:
+  version: "v1"
+  base_url: "http://0.0.0.0:7860"
+  endpoints:
+    - path: "/api/v1/env/reset"
+      method: "POST"
+      description: "Reset environment and get initial observation"
+    - path: "/api/v1/env/{env_id}/step"
+      method: "POST"
+      description: "Execute action in environment"
+    - path: "/api/v1/tasks"
+      method: "GET"
+      description: "List available tasks"
+    - path: "/api/v1/env/{env_id}/state"
+      method: "GET"
+      description: "Get full environment state (debugging)"
+
+# Task Configuration
+tasks:
+  log_analysis:
+    name: "Log Analysis"
+    description: "The application has been experiencing intermittent 500 errors. Find the exact timestamp of the first 500 Internal Server Error in the app log."
+    difficulty: 1
+    estimated_steps: 2
+    key_commands: ["cat", "grep"]
+    max_episode_steps: 50
+
+  permission_repair:
+    name: "Permission Repair"
+    description: "The cleanup.sh script needs to be run but it's not executable. Fix the permissions so the script can be executed."
+    difficulty: 2
+    estimated_steps: 3
+    key_commands: ["chmod", "ls"]
+    max_episode_steps: 50
+
+  process_recovery:
+    name: "Process Recovery"
+    description: "The PostgreSQL database service has crashed and is no longer running. Diagnose the issue and bring the service back online."
+    difficulty: 3
+    estimated_steps: 5
+    key_commands: ["ps", "kill", "systemctl"]
+    max_episode_steps: 50
+
+  cascading_db_failure:
+    name: "Cascading Database Failure"
+    description: "A cascading failure has occurred: the database crashed, which caused the application to return 502 errors, which flooded the nginx error log, which is now filling up the /var/log partition. Find the root cause and fix everything."
+    difficulty: 4
+    estimated_steps: 10
+    key_commands: ["ps", "systemctl", "df", "rm"]
+    max_episode_steps: 80
+
+  disk_space_crisis:
+    name: "Disk Space Crisis"
+    description: "The /var/log partition is nearly full (>90%). Old log files are consuming too much space. Free up disk space to prevent service failures."
+    difficulty: 2
+    estimated_steps: 4
+    key_commands: ["df", "du", "rm"]
+    max_episode_steps: 50
+
+  cron_job_failure:
+    name: "Cron Job Failure"
+    description: "The automated backup cron job has been failing repeatedly. The backup script at /usr/local/bin/backup.sh needs to exist and be executable. Investigate the cron logs and fix the issue."
+    difficulty: 2
+    estimated_steps: 4
+    key_commands: ["cat", "grep", "crontab", "chmod"]
+    max_episode_steps: 50
+
+  nginx_misconfiguration:
+    name: "Nginx Misconfiguration"
+    description: "After a recent deployment, nginx is returning 502 Bad Gateway errors. The upstream application server port was changed but nginx config wasn't updated. Fix the nginx configuration and reload the service."
+    difficulty: 3
+    estimated_steps: 5
+    key_commands: ["cat", "grep", "systemctl", "vi"]
+    max_episode_steps: 50
+
+  security_incident:
+    name: "Security Incident Response"
+    description: "An alert has been triggered: there are signs of a brute-force SSH attack from a suspicious IP address. Investigate the auth logs, identify the attacker IP, and block it using iptables. Also check if any unauthorized access was successful."
+    difficulty: 3
+    estimated_steps: 6
+    key_commands: ["cat", "grep", "iptables"]
+    max_episode_steps: 50
+
+  memory_leak:
+    name: "Memory Leak Investigation"
+    description: "The server is running critically low on memory. A service appears to be leaking memory. Identify which service is consuming excessive memory, restart it, and verify memory is freed."
+    difficulty: 3
+    estimated_steps: 5
+    key_commands: ["free", "top", "ps", "systemctl"]
+    max_episode_steps: 50
+
+  network_troubleshooting:
+    name: "Network Connectivity Issue"
+    description: "Users are reporting that the application is unreachable. The web server appears to be running but connections are not going through. Diagnose the network path: DNS, ports, firewall, and service health."
+    difficulty: 3
+    estimated_steps: 6
+    key_commands: ["netstat", "ss", "curl", "iptables"]
+    max_episode_steps: 50
+
+  full_incident:
+    name: "Full Incident Response"
+    description: "CRITICAL ALERT: Multiple systems are failing simultaneously. Triage, prioritize, and resolve all issues. Restore all services, free disk space, and secure the system."
+    difficulty: 4
+    estimated_steps: 15
+    key_commands: ["ps", "top", "df", "free", "systemctl", "grep", "rm"]
+    max_episode_steps: 100
+
+# Observation Space
+observation:
+  type: "dict"
+  keys:
+    - name: "current_directory"
+      type: "string"
+      description: "Current working directory"
+    - name: "processes"
+      type: "string"
+      description: "List of running processes"
+    - name: "filesystem"
+      type: "string"
+      description: "Contents of current directory"
+    - name: "task_name"
+      type: "string"
+      description: "Name of current task"
+    - name: "task_description"
+      type: "string"
+      description: "Description of what needs to be done"
+
+# Action Space
+action:
+  type: "string"
+  description: "Shell command to execute"
+  examples:
+    - "cat /var/log/app.log"
+    - "grep 500 /var/log/app.log"
+    - "chmod 0755 /home/user/scripts/cleanup.sh"
+    - "ps | grep postgres"
+    - "systemctl restart postgres"
+
+# Reward Configuration
+reward:
+  type: "float"
+  min: -1.0
+  max: 1.0
+  structure:
+    step_penalty: -0.01
+    progress_bonus: 0.5
+    completion_bonus: 0.5
+  description: "Reward for completing task stages"
+
+# Terminal Commands
+supported_commands:
+  - name: "cat"
+    description: "Display file contents"
+    safe: true
+    example: "cat /var/log/app.log"
+
+  - name: "grep"
+    description: "Search for patterns in files"
+    safe: true
+    example: "grep ERROR /var/log/app.log"
+
+  - name: "ls"
+    description: "List directory contents"
+    safe: true
+    example: "ls -la /home/user"
+
+  - name: "chmod"
+    description: "Change file permissions"
+    safe: true
+    example: "chmod 0755 /home/user/scripts/cleanup.sh"
+
+  - name: "ps"
+    description: "List running processes"
+    safe: true
+    example: "ps | grep postgres"
+
+  - name: "kill"
+    description: "Terminate a process"
+    safe: true
+    example: "kill postgres"
+
+  - name: "systemctl"
+    description: "Manage system services"
+    safe: true
+    example: "systemctl restart nginx"
+
+  - name: "test"
+    description: "Evaluate file characteristics"
+    safe: true
+    example: "test -f /home/user/script.sh"
+
+  - name: "echo"
+    description: "Print text"
+    safe: true
+    example: "echo 'Hello, World!'"
+
+  - name: "pwd"
+    description: "Print working directory"
+    safe: true
+    example: "pwd"
+
+# Filesystem Configuration
+filesystem:
+  type: "virtual"
+  locations:
+    - path: "/var/log/app.log"
+      description: "Application log file"
+      permissions: "0644"
+    - path: "/home/user/scripts/cleanup.sh"
+      description: "Cleanup shell script"
+      permissions: "0644"
+    - path: "/etc/app.conf"
+      description: "Application configuration"
+      permissions: "0640"
+
+# Process Configuration
+processes:
+  - name: "nginx"
+    pid: 1024
+    status: "running"
+    restartable: true
+
+  - name: "postgres"
+    pid: 5432
+    status: "dead"
+    restartable: true
+
+  - name: "redis"
+    pid: 6379
+    status: "running"
+    restartable: true
+
+# Grading Configuration
+grading:
+  system: "objective"
+  method: "state_verification"
+  stages:
+    - stage: 1
+      description: "Problem identified"
+      score_multiplier: 0.2
+    - stage: 2
+      description: "Solution attempted"
+      score_multiplier: 0.5
+    - stage: 3
+      description: "Solution verified"
+      score_multiplier: 0.99
+
+# Server Configuration
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  timeout: 30
+  debug: false
+
+# Docker Configuration
+docker:
+  image: "linux-sre-env:latest"
+  base_image: "python:3.11-slim"
+  ports:
+    - "8000:8000"
+  environment:
+    - "PYTHONUNBUFFERED=1"
+    - "PYTHONDONTWRITEBYTECODE=1"
+
+# Performance Requirements
+performance:
+  max_api_response_time_ms: 100
+  memory_per_environment_mb: 10
+  max_concurrent_environments: 1000
+  startup_time_seconds: 5
+
+# Compliance
+compliance:
+  openenv: "1.0"
+  standards:
+    - "OpenEnv REST API v1"
+    - "Pydantic v2"
+    - "Python 3.11+"
+  certifications:
+    - "Type-safe"
+    - "Deterministic"
+    - "Reproducible"
