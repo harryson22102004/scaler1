@@ -121,12 +121,20 @@ async def schema():
 
 @app.get("/api/v1/tasks")
 async def list_tasks():
+    task_keys = TrainingEnv.avail_tasks()
+    task_details = {
+        key: TrainingEnv.task_details(key)
+        for key in task_keys
+    }
+    task_objects = [
+        {"key": key, **task_details[key]}
+        for key in task_keys
+    ]
     return {
-        "tasks": TrainingEnv.avail_tasks(),
-        "details": {
-            key: TrainingEnv.task_details(key)
-            for key in TrainingEnv.avail_tasks()
-        }
+        "count": len(task_keys),
+        "tasks": task_objects,
+        "task_keys": task_keys,
+        "details": task_details,
     }
 
 
@@ -136,6 +144,18 @@ async def get_task(key: str):
     if not info:
         raise HTTPException(status_code=404, detail=f"Task '{key}' not found")
     return info
+
+
+@app.get("/tasks")
+async def list_tasks_alias():
+    """Top-level alias for validators that call /tasks."""
+    return await list_tasks()
+
+
+@app.get("/tasks/{key}")
+async def get_task_alias(key: str):
+    """Top-level alias for validators that call /tasks/{key}."""
+    return await get_task(key)
 
 
 # ======================================================================

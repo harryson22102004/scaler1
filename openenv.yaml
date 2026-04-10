@@ -40,6 +40,14 @@ tasks:
     estimated_steps: 2
     key_commands: ["cat", "grep"]
     max_episode_steps: 50
+    score: 0.99
+    graders:
+      - name: "check_working_directory"
+        score: 0.01
+      - name: "list_log_directory"
+        score: 0.04
+      - name: "find_500_timestamp"
+        score: 0.94
 
   permission_repair:
     name: "Permission Repair"
@@ -48,6 +56,14 @@ tasks:
     estimated_steps: 3
     key_commands: ["chmod", "ls"]
     max_episode_steps: 50
+    score: 0.99
+    graders:
+      - name: "locate_cleanup_script"
+        score: 0.01
+      - name: "check_script_permissions"
+        score: 0.04
+      - name: "make_script_executable"
+        score: 0.94
 
   process_recovery:
     name: "Process Recovery"
@@ -56,6 +72,14 @@ tasks:
     estimated_steps: 5
     key_commands: ["ps", "kill", "systemctl"]
     max_episode_steps: 50
+    score: 0.99
+    graders:
+      - name: "detect_postgres_down"
+        score: 0.20
+      - name: "restart_postgres"
+        score: 0.50
+      - name: "verify_postgres_port"
+        score: 0.29
 
   cascading_db_failure:
     name: "Cascading Database Failure"
@@ -64,6 +88,18 @@ tasks:
     estimated_steps: 10
     key_commands: ["ps", "systemctl", "df", "rm"]
     max_episode_steps: 80
+    score: 0.99
+    graders:
+      - name: "identify_root_cause"
+        score: 0.15
+      - name: "restart_postgres"
+        score: 0.25
+      - name: "restart_app"
+        score: 0.20
+      - name: "free_var_log_space"
+        score: 0.20
+      - name: "all_services_running"
+        score: 0.19
 
   disk_space_crisis:
     name: "Disk Space Crisis"
@@ -72,6 +108,14 @@ tasks:
     estimated_steps: 4
     key_commands: ["df", "du", "rm"]
     max_episode_steps: 50
+    score: 0.99
+    graders:
+      - name: "check_disk_usage"
+        score: 0.10
+      - name: "find_large_files"
+        score: 0.20
+      - name: "reduce_usage_below_85"
+        score: 0.69
 
   cron_job_failure:
     name: "Cron Job Failure"
@@ -80,6 +124,14 @@ tasks:
     estimated_steps: 4
     key_commands: ["cat", "grep", "crontab", "chmod"]
     max_episode_steps: 50
+    score: 0.99
+    graders:
+      - name: "check_cron_logs"
+        score: 0.20
+      - name: "create_backup_script"
+        score: 0.40
+      - name: "make_backup_executable"
+        score: 0.39
 
   nginx_misconfiguration:
     name: "Nginx Misconfiguration"
@@ -88,6 +140,14 @@ tasks:
     estimated_steps: 5
     key_commands: ["cat", "grep", "systemctl", "vi"]
     max_episode_steps: 50
+    score: 0.99
+    graders:
+      - name: "inspect_nginx_error_logs"
+        score: 0.20
+      - name: "fix_upstream_port"
+        score: 0.50
+      - name: "restart_nginx"
+        score: 0.29
 
   security_incident:
     name: "Security Incident Response"
@@ -96,6 +156,14 @@ tasks:
     estimated_steps: 6
     key_commands: ["cat", "grep", "iptables"]
     max_episode_steps: 50
+    score: 0.99
+    graders:
+      - name: "examine_auth_logs"
+        score: 0.30
+      - name: "identify_attacker_ip"
+        score: 0.30
+      - name: "verify_no_successful_root_login"
+        score: 0.39
 
   memory_leak:
     name: "Memory Leak Investigation"
@@ -104,6 +172,16 @@ tasks:
     estimated_steps: 5
     key_commands: ["free", "top", "ps", "systemctl"]
     max_episode_steps: 50
+    score: 0.99
+    graders:
+      - name: "check_memory"
+        score: 0.20
+      - name: "identify_memory_hog"
+        score: 0.30
+      - name: "restart_problem_service"
+        score: 0.30
+      - name: "verify_memory_recovery"
+        score: 0.19
 
   network_troubleshooting:
     name: "Network Connectivity Issue"
@@ -112,6 +190,16 @@ tasks:
     estimated_steps: 6
     key_commands: ["netstat", "ss", "curl", "iptables"]
     max_episode_steps: 50
+    score: 0.99
+    graders:
+      - name: "check_service_status"
+        score: 0.19
+      - name: "check_network_ports"
+        score: 0.30
+      - name: "identify_blocked_port"
+        score: 0.30
+      - name: "rebind_application_port"
+        score: 0.20
 
   full_incident:
     name: "Full Incident Response"
@@ -120,6 +208,20 @@ tasks:
     estimated_steps: 15
     key_commands: ["ps", "top", "df", "free", "systemctl", "grep", "rm"]
     max_episode_steps: 100
+    score: 0.99
+    graders:
+      - name: "triage_overall_health"
+        score: 0.09
+      - name: "restart_postgres"
+        score: 0.20
+      - name: "free_disk_space"
+        score: 0.20
+      - name: "investigate_security"
+        score: 0.15
+      - name: "all_services_healthy"
+        score: 0.20
+      - name: "verify_app_response"
+        score: 0.15
 
 # Observation Space
 observation:

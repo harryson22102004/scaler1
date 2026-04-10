@@ -104,15 +104,29 @@ def task_metadata(key: str) -> Dict:
     """Return metadata for a task/scenario."""
     task = get_task(key)
     meta = {
+        "key": key,
         "name": task.nm,
         "difficulty": task.diff,
         "description": task.desc,
         "instructions": task.guide(),
     }
     if isinstance(task, ScenarioTask):
-        meta["objectives"] = [
+        objectives = [
             {"description": o.description, "points": o.points, "completed": o.completed}
             for o in task.scenario.objectives
         ]
-        meta["total_points"] = sum(o.points for o in task.scenario.objectives)
+        total_points = round(sum(o.points for o in task.scenario.objectives), 4)
+        meta["objectives"] = objectives
+        # Alias for validators that expect explicit "graders" with a score field.
+        meta["graders"] = [
+            {
+                "name": f"grader_{idx}",
+                "description": obj["description"],
+                "score": obj["points"],
+            }
+            for idx, obj in enumerate(objectives, start=1)
+        ]
+        meta["objective_count"] = len(objectives)
+        meta["total_points"] = total_points
+        meta["score"] = total_points
     return meta
